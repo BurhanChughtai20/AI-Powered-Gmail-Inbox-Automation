@@ -1,0 +1,22 @@
+# ─── n8n Data & Database ───
+n8n_data/* 
+!n8n_data/.gitkeep 
+database.sqlite
+database.sqlite-shm
+database.sqlite-wal
+crash.journal
+n8nEventLog.log
+storage/
+nodes/
+config
+```
+
+---
+
+## Kyun Yeh Kaam Karta Hai:
+```
+n8n_data/*        → andar ki sab files ignore ✅
+!n8n_data/.gitkeep → sirf yeh ek file upload ✅
+
+GitHub pe folder dikhega
+lekin sensitive data nahi ✅

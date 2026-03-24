@@ -1,0 +1,805 @@
+{
+  "name": "AI-Powered Gmail Inbox Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e8fecc44-bfcf-42cd-a82d-b2963d8f4c94",
+              "name": "id",
+              "type": "string",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "id": "4967158d-b4ee-41b4-a945-d19462d08886",
+              "name": "text",
+              "type": "string",
+              "value": "={{ $json.text ?? $json.html ?? \"\" }}"
+            },
+            {
+              "id": "48cf009c-69ea-48aa-9de8-d53039aca4a5",
+              "name": "from",
+              "type": "string",
+              "value": "={{ $json.from.value[0].name }}"
+            },
+            {
+              "id": "cfd63044-5e92-44c3-ad28-16118c1b83cb",
+              "name": "threadId",
+              "type": "string",
+              "value": "={{ $json.threadId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "38bcf655-9bf9-4ace-a920-35d2c2662999",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -3568,
+        1424
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "id": "9d790700-3c6f-45b1-8a0e-a9a32c50c6f4",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        -4016,
+        1424
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 20,
+        "simple": false,
+        "filters": {
+          "q": "in:inbox category:primary is:unread",
+          "readStatus": "unread"
+        },
+        "options": {}
+      },
+      "id": "2f534be2-8a89-4e3d-9546-483ebfc059af",
+      "name": "Get All Unread Messages",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        -3792,
+        1424
+      ],
+      "webhookId": "59626731-064c-469a-ab85-a95df2480031",
+      "typeVersion": 2.1,
+      "notesInFlow": false,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "SRs8aMgea433Ibkj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "7822ad3b-3f0a-4e7e-8f3c-96641f2e2d4a",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.label }}",
+                    "rightValue": "Action"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Action"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "a076e618-a956-4ea7-a253-67e90a008495",
+                    "operator": {
+                      "name": "filter.operator.equals",
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.label }}",
+                    "rightValue": "Informational"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Informational"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "873953c5-db09-450c-b5ed-59f695bfc9af",
+                    "operator": {
+                      "name": "filter.operator.equals",
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.label }}",
+                    "rightValue": "Receipt"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Receipt"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "fdcbe052-35a8-40fe-aa54-c52edb29341e",
+                    "leftValue": "={{ $json.label }}",
+                    "rightValue": "Spam",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Spam"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "4437b0f3-7b77-42c3-8e94-334de6bf49b5",
+      "name": "Switch",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        -2096,
+        944
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "messageId": "={{ $json.id }}"
+      },
+      "id": "f6cf2c88-91bb-4322-9003-c48fcc6e882e",
+      "name": "Delete email",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        -1872,
+        1280
+      ],
+      "webhookId": "3466588b-86a6-4072-8879-11997f48e1d4",
+      "typeVersion": 2.1,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "SRs8aMgea433Ibkj",
+          "name": "Gmail account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $('Code in JavaScript').first().json.id }}"
+      },
+      "id": "ddf1ed2a-97be-4bfa-acf1-832acbe87c68",
+      "name": "Mark email as read",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        -1648,
+        944
+      ],
+      "webhookId": "f3131e67-dfdb-40d8-9199-bb79069b0c33",
+      "typeVersion": 2.1,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "SRs8aMgea433Ibkj",
+          "name": "Gmail account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_3526356327446057851"
+        ]
+      },
+      "id": "85c9c703-4b8a-48a4-98bd-d9b220031936",
+      "name": "Add label \"Receipt\" to email",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        -1872,
+        1088
+      ],
+      "webhookId": "89f06cdb-8ae8-4e84-93ec-00c48d2cecfe",
+      "typeVersion": 2.1,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "SRs8aMgea433Ibkj",
+          "name": "Gmail account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_6451329291679327961"
+        ]
+      },
+      "id": "f6c446cd-4dc2-483f-9d4d-46550ce52548",
+      "name": "Add label \"Action\" to email",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        -1872,
+        704
+      ],
+      "webhookId": "d3bf8de1-aa15-47d2-9c7b-6be8d3b4468f",
+      "typeVersion": 2.1,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "SRs8aMgea433Ibkj",
+          "name": "Gmail account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "content": "### 💡 Schedule Trigger\nThis runs every hour. You can change the interval here depending on how often you want your Gmail to be processed.",
+        "height": 304,
+        "width": 208,
+        "color": 5
+      },
+      "id": "98f94927-768c-419c-92b5-f64f0452f176",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -4080,
+        1280
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### ⚠️ Setup Required\n- Connect your Gmail account using OAuth2. \n- Add your OpenAI API Key under “API Credentials”.\n- Create these labels in your Gmail: Action, Informational, Spam and Receipt",
+        "height": 224,
+        "width": 304
+      },
+      "id": "bbcdb180-2b23-4ae5-b13d-d32095f68797",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3792,
+        1216
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### 💡 Add More Labels\nWant to detect  `Meeting`, `Newsletter`, etc?\nAdd more conditions here and route them to different Gmail actions.",
+        "height": 416,
+        "color": 5
+      },
+      "id": "4d0a95ae-9ec5-4e85-af90-ac8e89b59c0d",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2192,
+        688
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_6802727985222753460"
+        ]
+      },
+      "id": "9a2e5ae6-e771-4179-bea8-608108b915fc",
+      "name": "Add label \"Informational\" to email",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        -1872,
+        896
+      ],
+      "webhookId": "d3bf8de1-aa15-47d2-9c7b-6be8d3b4468f",
+      "typeVersion": 2.1,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "SRs8aMgea433Ibkj",
+          "name": "Gmail account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -3344,
+        1424
+      ],
+      "id": "214f72fa-9b48-44ae-b000-79acbcc12124",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.text || \"\";\n\n// Clean the raw output\nconst cleaned = raw\n  .replace(/```/g, \"\")\n  .replace(/\\*\\*/g, \"\")\n  .trim();\n\nconst lines = cleaned.split(\"\\n\").filter(l => l.trim() !== \"\");\n\n// Extract value by key\nconst getValue = (key) => {\n  const line = lines.find(l => \n    l.toLowerCase().startsWith(key.toLowerCase() + \":\")\n  );\n  if (!line) return \"\";\n  return line.substring(line.indexOf(\":\") + 1).trim();\n};\n\n// Valid labels list\nconst validLabels = [\"Action\", \"Receipt\", \"Spam\", \"Informational\"];\n\n// Get label and validate\nlet label = getValue(\"label\");\n\n// Normalize label (fix case issues)\nconst matchedLabel = validLabels.find(\n  v => v.toLowerCase() === label.toLowerCase()\n);\nlabel = matchedLabel || \"Informational\";\n\n// Get summary\nlet summary = getValue(\"summary\");\nif (!summary || summary.length < 3) {\n  summary = \"Email processed\";\n}\n\n// Trim summary to 60 chars\nif (summary.length > 60) {\n  summary = summary.substring(0, 57) + \"...\";\n}\n\n// Get id from current loop item\nconst loopData = $('Loop Over Items').first().json;\nconst emailId = loopData.id || \"\";\nconst threadId = loopData.threadId || \"\";\n\n// Safety check\nif (!emailId) {\n  console.log(\"WARNING: emailId is empty!\");\n}\n\nreturn [{\n  json: {\n    label,\n    summary,\n    id: emailId,\n    threadId,\n    classifiedAt: new Date().toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2320,
+        992
+      ],
+      "id": "3fcaf53b-882e-4095-b06f-4401022fbf9b",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert email classifier. Read the email carefully and classify it.\n\nCLASSIFICATION RULES (read in order, first match wins):\n\nACTION → Immediately needs attention:\n  - Job offer, interview invite, contract proposal\n  - Bill, invoice, payment due, account suspended\n  - Password reset, security alert, 2FA, login attempt\n  - MongoDB/server alert, cluster paused, system down\n  - Direct personal message requiring reply\n  - Deadline, urgent request, legal notice\n\nRECEIPT → Transaction confirmation:\n  - Order confirmed, purchase receipt\n  - Subscription activated/renewed\n  - Payment received/processed\n  - Booking confirmation\n\nSPAM → Unwanted bulk mail:\n  - Mass marketing, discount, sale, promo code\n  - Newsletter, digest, weekly roundup\n  - Unsubscribe link present + no personal content\n  - Cold outreach, SEO/agency pitch\n\nINFORMATIONAL → FYI only, no action needed:\n  - Shipping update, delivery notification\n  - Social media notification (Facebook, LinkedIn)\n  - App update, changelog, release notes\n  - Account activity summary\n\nSTRICT RULES:\n1. Personal email addressed to YOU = ACTION (never Spam)\n2. Contains your name directly = ACTION\n3. Security/account alert = always ACTION\n4. If between Spam and Informational = Informational\n5. If completely unsure = Informational (NEVER default to Spam)\n\nReturn ONLY this exact format (no extra text):\nlabel:CHOSEN_LABEL\nsummary:ONE SENTENCE MAX 60 CHARS — WHO did WHAT\n\nEmail content:\n{{ ($json.text ?? $json.html ?? \"\").slice(0, 500) }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -2672,
+        992
+      ],
+      "id": "ce0fc1ec-54fd-483a-8e4a-e695d3ada026",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "mistralai/mistral-7b-instruct-v0.1",
+        "options": {
+          "maxTokens": 150,
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -2608,
+        1216
+      ],
+      "id": "d0aaf98e-afda-4bcd-a117-fb1a80a5b4ce",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "1ePPUc3TgghJJyzm",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "collection": "processed_emails",
+        "options": {},
+        "query": "={ \"emailId\": \"{{ $json.id }}\" }"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        -3120,
+        992
+      ],
+      "id": "c19fa585-3af4-4be7-a0bf-5ce5d0c0ece4",
+      "name": "Find documents",
+      "alwaysOutputData": true,
+      "credentials": {
+        "mongoDb": {
+          "id": "IGU2RdHB1e7l48jb",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2cd4dd10-d7d3-4eeb-9e6b-94cb51ae39a4",
+              "leftValue": "={{ $json.document }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2896,
+        992
+      ],
+      "id": "eee8bfe9-3e5b-4929-b0df-4b1ec1691c83",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "processed_emails",
+        "fields": "={\n  \"emailId\": \"{{ $('Code in JavaScript').first().json.id }}\",\n  \"processedAt\": \"{{ $now }}\",\n  \"label\": \"{{ $('Code in JavaScript').first().json.label }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        -1424,
+        1168
+      ],
+      "id": "db5b88a2-b31e-4c04-ac0c-ebe363c1d9ec",
+      "name": "Insert documents",
+      "credentials": {
+        "mongoDb": {
+          "id": "IGU2RdHB1e7l48jb",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Used to CHECK if email was already processed\n\n#1. Connection\nSelect your MongoDB account credential\n\n#2. Credentials\n\nSame credential you created in setup — auto-fills the database\n\n#3. Operation\n\nResource: Document\nOperation: Find\n\n#4. Collection\n\nCollection: processed_emails\nQuery: {\"emailId\": \"{{ $json.id }}\"}\nSettings → Always Output Data: ON\nNo result = new email = process it. Result found = duplicate = skip it.",
+        "height": 448,
+        "width": 576,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3248,
+        704
+      ],
+      "typeVersion": 1,
+      "id": "d3f25fc1-88d2-42fd-858e-cfe288199c03",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Used to SAVE email ID after processing\n\n1. Connection\nSelect same MongoDB account credential\n\n2. Credentials\nSame credential — connects to same database automatically\n\n3. Operation\nResource: Document\nOperation: Insert\n\n4. Collection\nCollection: processed_emails\nFields to insert:\nemailId: {{ $json.id }}\nlabel: {{ $json.label }}\nprocessedAt: {{ $now }}\nPlace this AFTER Mark as Read — so only fully processed emails get saved.",
+        "height": 432,
+        "width": 496,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1520,
+        1104
+      ],
+      "typeVersion": 1,
+      "id": "24548464-c3e7-4326-aa91-5cc7eda5d811",
+      "name": "Sticky Note4"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Add label \"Action\" to email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add label \"Informational\" to email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add label \"Receipt\" to email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delete email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get All Unread Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Unread Messages": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label \"Action\" to email": {
+      "main": [
+        [
+          {
+            "node": "Mark email as read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label \"Receipt\" to email": {
+      "main": [
+        [
+          {
+            "node": "Mark email as read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label \"Informational\" to email": {
+      "main": [
+        [
+          {
+            "node": "Mark email as read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Find documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark email as read": {
+      "main": [
+        [
+          {
+            "node": "Insert documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete email": {
+      "main": [
+        [
+          {
+            "node": "Mark email as read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find documents": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert documents": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "5f89bd32-8c7f-483a-8fec-fa62791a5a0e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e27836ccf208ba99ca71fa0e16d93c74ed110f4408f0d354688bca03673370a6"
+  },
+  "id": "WywKGQiQdUQuAAQ0",
+  "tags": [
+    {
+      "updatedAt": "2026-03-24T06:23:36.438Z",
+      "createdAt": "2026-03-24T06:23:36.438Z",
+      "id": "OBCx6NCrGi1RCNJi",
+      "name": "Self Hosted"
+    },
+    {
+      "updatedAt": "2026-03-24T06:23:30.845Z",
+      "createdAt": "2026-03-24T06:23:30.845Z",
+      "id": "a9dp7R0hHlnknSpG",
+      "name": "Gmail API"
+    },
+    {
+      "updatedAt": "2026-03-24T06:23:17.975Z",
+      "createdAt": "2026-03-24T06:23:17.975Z",
+      "id": "jqmapPKEdmcJPutw",
+      "name": "n8n Workflow"
+    },
+    {
+      "updatedAt": "2026-03-24T06:23:22.776Z",
+      "createdAt": "2026-03-24T06:23:22.776Z",
+      "id": "qPKn6pEWwpwBijlq",
+      "name": "OpenRouter AI"
+    },
+    {
+      "updatedAt": "2026-03-24T06:23:27.250Z",
+      "createdAt": "2026-03-24T06:23:27.250Z",
+      "id": "rgq3UUB0hXpnWopa",
+      "name": "MongoDB Atlas"
+    }
+  ]
+}
