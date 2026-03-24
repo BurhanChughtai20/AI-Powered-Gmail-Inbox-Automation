@@ -1,6 +1,10 @@
+# ================================
+# n8n Docker Workflow — .gitignore
+# ================================
+
 # ─── n8n Data & Database ───
-n8n_data/* 
-!n8n_data/.gitkeep 
+n8n_data/*
+!n8n_data/.gitkeep
 database.sqlite
 database.sqlite-shm
 database.sqlite-wal
@@ -9,14 +13,43 @@ n8nEventLog.log
 storage/
 nodes/
 config
-```
 
----
+# ─── Credentials & Secrets ───
+*.credentials
+credentials.json
+.env
+.env.local
+.env.production
+secrets.json
+ngrok.yml
+ngrok-authtoken.txt
 
-## Kyun Yeh Kaam Karta Hai:
-```
-n8n_data/*        → andar ki sab files ignore ✅
-!n8n_data/.gitkeep → sirf yeh ek file upload ✅
+# ─── Docker ───
+docker-compose.override.yml
+.docker/
 
-GitHub pe folder dikhega
-lekin sensitive data nahi ✅
+# ─── OS Files ───
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Node / NPM ───
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ─── Logs ───
+*.log
+logs/
+
+# ─── IDE / Editor ───
+.vscode/
+.idea/
+*.suo
+*.user
+
+# ─── Temp Files ───
+*.tmp
+*.temp
+*.swp
