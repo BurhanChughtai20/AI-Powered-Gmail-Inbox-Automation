@@ -17,5 +17,16 @@ services:
     volumes:
       - n8n_data:/home/node/.n8n
 
+  ngrok:
+    image: ngrok/ngrok:latest
+    restart: always
+    environment:
+      - NGROK_AUTHTOKEN=3BO1BSxh5UppXXOGCDPfT0GDDBK_3c63139wn4aKSXuUmWGwt
+    command: http --url=paola-calcic-saundra.ngrok-free.dev n8n:5678
+    ports:
+      - "4040:4040"
+    depends_on:
+      - n8n
+
 volumes:
   n8n_data:
